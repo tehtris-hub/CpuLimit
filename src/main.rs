@@ -1,19 +1,32 @@
-use std::env;
+use clap::Parser;
 
-use cpulimit::ChildrenMode;
-use cpulimit::Pid;
+use cpulimiter::ChildrenMode;
+use cpulimiter::Pid;
+
+#[derive(Parser, Debug)]
+#[clap(version, about)]
+struct Args {
+    #[clap(
+        short,
+        long,
+        parse(try_from_str),
+        help = "The PID of the target process"
+    )]
+    pid: Pid,
+    #[clap(short, long, help = "The CPU rate limit to enforce")]
+    limit: f64,
+    #[clap(short = 'i', long, help = "Also limit the CPU usage of the children")]
+    include_children: bool,
+}
 
 fn main() {
-    println!("cpulimit test");
+    let args = Args::parse();
 
-    let mut args = env::args();
+    let children_mode = if args.include_children {
+        ChildrenMode::Include
+    } else {
+        ChildrenMode::Exclude
+    };
 
-    let pid: u32 = args
-        .nth(1)
-        .expect("No pid found")
-        .parse()
-        .expect("Error while parsing first arg");
-
-    let pid = Pid::from(pid);
-    pid.limit(10.0, ChildrenMode::Exclude)
+    args.pid.limit(args.limit, children_mode)
 }

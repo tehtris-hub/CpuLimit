@@ -21,7 +21,7 @@ lazy_static!(
     /// The number of clock ticks per second.
     ///
     /// This is a kernel constant (fixed at compile-time).
-    // SAFETY: Inherently unsafe as a syscall, but the parameter valid.
+    // SAFETY: Inherently unsafe as a syscall, but the parameter is valid.
     static ref CLOCK_TICKS: i64 = unsafe {
         libc::sysconf(libc::_SC_CLK_TCK)
     };
@@ -48,6 +48,14 @@ impl FromStr for Pid {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Pid(s.parse::<u32>()?))
+    }
+}
+
+impl TryFrom<&str> for Pid {
+    type Error = core::num::ParseIntError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Pid::from_str(value)
     }
 }
 
