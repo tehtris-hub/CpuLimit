@@ -1,0 +1,8 @@
+[package]
+name = "cpulimit"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lazy_static = { version = "1.4.0", default-features = false }
+libc = "0.2.125"
