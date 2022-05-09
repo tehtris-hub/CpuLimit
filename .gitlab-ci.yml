@@ -1,0 +1,32 @@
+image: rust:slim
+
+variables:
+  CARGO_HOME: .cache/cargo
+
+cache:
+  paths:
+    - $CARGO_HOME
+    - target/
+
+stages:
+  - clippy
+  - fmt
+  - build
+
+clippy:
+  stage: clippy
+  script: 
+    - rustup component add clippy
+    - cargo clippy -- -D warnings
+
+fmt:
+  stage: fmt
+  script: 
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+
+build:
+  stage: build
+  script:
+    - cargo build --verbose
+    - cargo test --verbose
