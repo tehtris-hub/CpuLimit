@@ -5,7 +5,7 @@
 //! # Example
 //!
 //! ```no_run
-//! use cpulimit::Pid;
+//! use cpulimiter::Pid;
 //!
 //! Pid::from(1048).limit(10.0, Default::default());
 //! ```
