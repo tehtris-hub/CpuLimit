@@ -98,7 +98,7 @@ mod test {
         assert_eq!(stat.next(), Some("cat"));
         assert_eq!(stat.next(), Some("R"));
         assert_eq!(stat.next(), Some("127912"));
-        assert_eq!(stat.skip(52 - 4 - 1).next(), Some("0"));
+        assert_eq!(stat.nth(52 - 4 - 1), Some("0"));
     }
 
     #[test]
@@ -110,7 +110,7 @@ mod test {
         assert_eq!(stat.next(), Some("evil program x) name!"));
         assert_eq!(stat.next(), Some("S"));
         assert_eq!(stat.next(), Some("120869"));
-        assert_eq!(stat.skip(52 - 4 - 1).next(), Some("42"));
+        assert_eq!(stat.nth(52 - 4 - 1), Some("42"));
     }
 
     #[test]
