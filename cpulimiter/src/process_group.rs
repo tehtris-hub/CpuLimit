@@ -20,9 +20,8 @@ impl Default for ChildrenMode {
     }
 }
 
-/// An abstraction to compute CPU for a process and its children.
+/// An abstraction to compute CPU usage for a process and its children.
 pub struct ProcessGroup {
-    /// The PID of the target process
     target: Pid,
     children_mode: ChildrenMode,
     children: HashSet<Pid>,
@@ -32,7 +31,7 @@ pub struct ProcessGroup {
 }
 
 impl ProcessGroup {
-    /// Instantiate a process group
+    /// Instantiate a process group.
     pub fn new(pid: Pid, children_mode: ChildrenMode) -> Self {
         let mut group = Self {
             target: pid,
@@ -47,17 +46,18 @@ impl ProcessGroup {
         group
     }
 
-    /// Updates the CPU usage of the group.
+    /// Update the CPU usage of the group.
     ///
     /// This function computes the CPU usage since the last call and smoothly updates
     /// the `cpu_usage` attribute.
     pub fn update(&mut self) -> &mut Self {
         if let ChildrenMode::Include = self.children_mode {
-            let processes = ProcessIterator::new();
-            self.children.clear();
-            for process in processes {
-                if process != self.target && process.is_child_of(self.target) {
-                    self.children.insert(process);
+            if let Ok(processes) = ProcessIterator::new() {
+                self.children.clear();
+                for process in processes {
+                    if process != self.target && process.is_child_of(self.target) {
+                        self.children.insert(process);
+                    }
                 }
             }
         }
@@ -86,7 +86,7 @@ impl ProcessGroup {
         self
     }
 
-    /// Retrives the stored CPU usage.
+    /// Retrieve the previously computed CPU usage.
     #[inline]
     pub fn cpu_usage(&self) -> f64 {
         self.cpu_usage

@@ -1,9 +1,9 @@
 //! Parse `/proc/<pid>/stat` files.
 //!
-//! This modules exposes an iterator to parse the content of
+//! This modules exposes an iterator to parse the content of the
 //! `/proc/<pid>/stat` file. The format is described in `man proc`.
 //!
-//! One cannot simply use [`str::split_whitespace`] because the `comm` field
+//! We cannot simply use [`str::split_whitespace`] because the `comm` field
 //! (command name) might contain arbitrary characters.
 
 use std::fs;
@@ -38,7 +38,7 @@ enum State {
     Pid,
     /// The next field to yield is the command name.
     Command,
-    /// The remaining fields are separated by whitespace.
+    /// The remaining fields are simply separated by whitespace.
     Normal,
 }
 
@@ -60,22 +60,22 @@ impl<'a> Iterator for StatFileIter<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.state == State::Command {
-            self.state = State::Normal;
-
-            let idx = self
-                .data
-                .rfind(')')
-                .expect("Wrongly formatted /proc/<pid>/stat file");
-
+            // find the last parenthesis as it marks the end of the command name
+            let idx = self.data.rfind(')')?;
             self.idx += 1; // skip first parenthesis
             let res = &self.data[self.idx..idx];
+            
+            // the following fields are all whitespace-separated
+            self.state = State::Normal;
             self.idx = idx + 2; // place idx on the next field
+
             Some(res)
         } else {
             if self.state == State::Pid {
                 self.state = State::Command;
             }
 
+            // yield the next whitespace-separated field
             let idx = self.idx + self.data[self.idx..].find(char::is_whitespace)?;
             let res = &self.data[self.idx..idx];
             self.idx = idx + 1;

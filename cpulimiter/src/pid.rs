@@ -109,7 +109,7 @@ impl Pid {
             .iter()
             .skip(13)
             .take(2) // utime and stime (unit: clock ticks)
-            .map(|t| t.parse::<u64>().unwrap())
+            .map(|t| t.parse::<u64>().unwrap_or_default())
             .sum();
 
         Duration::from_secs_f64(time as f64 / *CLOCK_TICKS as f64)
@@ -147,10 +147,6 @@ impl Pid {
         };
 
         // SAFETY: Inherently unsafe as a syscall but the PID and the signal are valid values.
-        let res = unsafe { libc::kill(self.0 as _, sig) };
-
-        if res != 0 {
-            panic!("Couldn't send {sig:?} to process {}", self.0)
-        }
+        unsafe { libc::kill(self.0 as _, sig) };
     }
 }

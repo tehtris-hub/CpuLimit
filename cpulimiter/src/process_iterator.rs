@@ -12,16 +12,16 @@ pub(crate) struct ProcessIterator {
 
 impl ProcessIterator {
     /// Instantiates a `ProcessIterator` (open the `/proc` directory).
-    pub fn new() -> Self {
-        let proc = fs::read_dir("/proc").expect("Error while opening `/proc`");
-        Self { proc }
+    pub fn new() -> std::io::Result<Self> {
+        let proc = fs::read_dir("/proc")?;
+        Ok(Self { proc })
     }
 }
 
 impl Iterator for ProcessIterator {
     type Item = Pid;
 
-    /// Walks `/proc` and yields the next PID.
+    /// Walks `/proc` and yields the PID of the next process.
     ///
     /// Parsing errors are silently ignored.
     fn next(&mut self) -> Option<Self::Item> {
