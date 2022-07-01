@@ -116,7 +116,7 @@ impl Pid {
     }
 
     /// Actively limits the CPU time of the target process (and its children if asked to).
-    pub fn limit(&self, limit: f64, children_mode: ChildrenMode) {
+    pub fn start_limit(&self, limit: f64, children_mode: ChildrenMode) {
         let limit = limit / 100_f64;
         let mut group = ProcessGroup::new(*self, children_mode);
         let mut working_rate = 1_f64;
@@ -136,6 +136,16 @@ impl Pid {
             group.suspend();
             thread::sleep(sleep_time);
         }
+    }
+
+    /// Actively limits the CPU time of the target process only.
+    pub fn limit(&self, limit: f64) {
+        self.start_limit(limit, ChildrenMode::Exclude);
+    }
+
+    /// Actively limits the CPU time of the target process and its children.
+    pub fn limit_with_children(&self, limit: f64) {
+        self.start_limit(limit, ChildrenMode::Include);
     }
 
     /// Sends `signal` to `self`.

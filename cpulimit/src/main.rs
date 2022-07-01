@@ -1,6 +1,5 @@
 use clap::Parser;
 
-use cpulimiter::ChildrenMode;
 use cpulimiter::Pid;
 
 #[derive(Parser, Debug)]
@@ -22,11 +21,9 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let children_mode = if args.include_children {
-        ChildrenMode::Include
+    if args.include_children {
+        args.pid.limit_with_children(args.limit)
     } else {
-        ChildrenMode::Exclude
+        args.pid.limit(args.limit)
     };
-
-    args.pid.limit(args.limit, children_mode)
 }

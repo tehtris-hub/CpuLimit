@@ -64,7 +64,7 @@ impl<'a> Iterator for StatFileIter<'a> {
             let idx = self.data.rfind(')')?;
             self.idx += 1; // skip first parenthesis
             let res = &self.data[self.idx..idx];
-            
+
             // the following fields are all whitespace-separated
             self.state = State::Normal;
             self.idx = idx + 2; // place idx on the next field

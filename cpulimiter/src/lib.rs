@@ -7,7 +7,10 @@
 //! ```no_run
 //! use cpulimiter::Pid;
 //!
-//! Pid::from(1048).limit(10.0, Default::default());
+//! // Only limit the target process
+//! Pid::from(1048).limit(10.0);
+//! // or also account for the children
+//! Pid::from(2096).limit_with_children(42.0);
 //! ```
 
 mod pid;
