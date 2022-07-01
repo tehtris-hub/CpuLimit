@@ -1,18 +1,3 @@
-[package]
-name = "cpulimit"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-[lib]
-name = "cpulimiter"
-
-[[bin]]
-name = "cpulimit"
-
-[dependencies]
-lazy_static = { version = "1.4.0", default-features = false }
-libc = "0.2.125"
-
-[dependencies.clap]
-version = "3.1.15"
-features = ["derive", "color", "suggestions"]
+members = ["cpulimiter", "cpulimit"]
