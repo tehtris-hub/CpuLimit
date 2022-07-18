@@ -8,7 +8,7 @@
 //! // Only limit the target process
 //! Pid::from(1048).limit(10.0);
 //! // or also account for the children
-//! Pid::from(2096).limit_with_children(42.0);
+//! Pid::try_from("2096").unwrap().limit_with_children(42.0);
 //! ```
 
 mod pid;
