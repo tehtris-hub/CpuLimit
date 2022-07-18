@@ -2,7 +2,10 @@
 name = "cpulimiter"
 version = "0.1.0"
 edition = "2021"
+license = "LGPL-3.0-only"
 
 [dependencies]
+# All dependencies are licensed under both MIT and Apache 2.0
+# unless stated otherwise.
 lazy_static = { version = "1.4.0", default-features = false }
 libc = "0.2.125"
