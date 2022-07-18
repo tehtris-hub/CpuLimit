@@ -1,4 +1,4 @@
-# CPUlimit
+# CpuLimit
 
 An oxidized version of the original [`cpulimit`](https://github.com/opsengine/cpulimit),
 a utility to limit the CPU usage of a process.
@@ -24,15 +24,13 @@ obtain the desired CPU usage.
 
 - `cpulimit` only supports Linux-based operating systems.
 - only single-threaded processes are currently supported.
-
+- the time slice is not configurable yet
 
 ## License
 
-Developped at [TEHTRIS](https://tehtris.com) by Fabien Savy.
+Developed at [TEHTRIS](https://tehtris.com) by Fabien Savy.
 
-Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License"); you may not use this file except in compliance with the License.
-
-You may obtain a copy of the License at [http://www.gnu.org/licenses/lgpl-3.0.txt](http://www.gnu.org/licenses/lgpl-3.0.txt])
+Distributed under the terms of the GNU Lesser General Public License (LGPL), Version 3.0 (the "License"). You may obtain a copy of the License at <http://www.gnu.org/licenses/lgpl-3.0.txt>.
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 

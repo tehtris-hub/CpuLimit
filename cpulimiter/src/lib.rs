@@ -1,7 +1,5 @@
 //! A tool to limit the CPU usage of a process.
 //!
-//! This is a rewrite of the original [`cpulimit`](https://github.com/opsengine/cpulimit).
-//!
 //! # Example
 //!
 //! ```no_run

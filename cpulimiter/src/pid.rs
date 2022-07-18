@@ -36,7 +36,7 @@ pub enum Signal {
     SIGCONT,
 }
 
-/// A process running on the system.
+/// The representation of a process running on the system.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Eq, Hash, Debug)]
 pub struct Pid(u32);
 
@@ -149,7 +149,7 @@ impl Pid {
 
     /// Sends `signal` to the process.
     #[inline]
-    pub fn kill(&self, signal: &Signal) {
+    pub(crate) fn kill(&self, signal: &Signal) {
         let sig = match signal {
             Signal::SIGSTOP => libc::SIGSTOP,
             Signal::SIGCONT => libc::SIGCONT,
