@@ -13,8 +13,8 @@ use crate::stat_iterator::StatFile;
 
 /// The granularity of the control slice.
 ///
-/// The monitoring thread will wake up every `SLICE_DURATION` to decide the next working slice
-/// for the monitored process(es).
+/// The monitoring thread will wake up every `SLICE_DURATION` to compute
+/// the length of the next work slice for the monitored process(es).
 pub const SLICE_DURATION: Duration = Duration::from_millis(100);
 
 lazy_static!(
@@ -73,15 +73,16 @@ impl Display for Pid {
 
 impl Pid {
     /// Retrieves the parent process identifier (`ppid`).
-    pub fn get_ppid(&self) -> Pid {
-        let stat = StatFile::open(*self);
-        if stat.is_err() {
-            return Pid(0);
-        }
-
-        let stat = stat.unwrap();
-        let ppid = stat.iter().nth(3).unwrap();
-        Pid::from_str(ppid).unwrap()
+    #[must_use]
+    pub fn get_ppid(&self) -> Self {
+        StatFile::open(*self)
+            .ok()
+            .and_then(|stat| {
+                let mut stat = stat.iter();
+                stat.nth(3).map(ToOwned::to_owned)
+            })
+            .and_then(|ppid| Self::from_str(&ppid).ok())
+            .unwrap_or(Self(0))
     }
 
     /// Indicates whether `self` is a child of `other`.
@@ -89,36 +90,32 @@ impl Pid {
         let mut ppid = *self;
 
         while ppid > INIT && ppid != other {
-            ppid = ppid.get_ppid()
+            ppid = ppid.get_ppid();
         }
 
         ppid == other
     }
 
-    /// Retrieves the current CPU time of the process.
-    ///
-    /// This duration is the sum of the `utime` (user mode) and `stime` (kernel mode).
+    /// Retrieves the current CPU time, sum of the `utime` (user mode) and `stime` (kernel mode).
     pub fn get_cputime(&self) -> Duration {
-        let stat = StatFile::open(*self);
-        if stat.is_err() {
-            return Duration::from_secs(0);
-        }
-
-        let stat = stat.unwrap();
-        let time: u64 = stat
-            .iter()
-            .skip(13)
-            .take(2) // utime and stime (unit: clock ticks)
-            .map(|t| t.parse::<u64>().unwrap_or_default())
-            .sum();
-
-        Duration::from_secs_f64(time as f64 / *CLOCK_TICKS as f64)
+        StatFile::open(*self)
+            .ok()
+            .map(|stat| {
+                let stat = stat.iter();
+                let time: u64 = stat
+                    .skip(13)
+                    .take(2) // utime and stime (unit: clock ticks)
+                    .map(|t| t.parse::<u64>().unwrap_or_default())
+                    .sum();
+                Duration::from_secs_f64(time as f64 / *CLOCK_TICKS as f64)
+            })
+            .unwrap_or(Duration::from_secs(0))
     }
 
     /// Actively limits the CPU time of the target process (and its children if asked to).
-    pub fn start_limit(&self, limit: f64, children_mode: ChildrenMode) {
+    fn start_limit(self, limit: f64, children_mode: ChildrenMode) {
         let limit = limit / 100_f64;
-        let mut group = ProcessGroup::new(*self, children_mode);
+        let mut group = ProcessGroup::new(self, children_mode);
         let mut working_rate = 1_f64;
 
         loop {
@@ -139,16 +136,18 @@ impl Pid {
     }
 
     /// Actively limits the CPU time of the target process only.
+    #[inline]
     pub fn limit(&self, limit: f64) {
         self.start_limit(limit, ChildrenMode::Exclude);
     }
 
     /// Actively limits the CPU time of the target process and its children.
+    #[inline]
     pub fn limit_with_children(&self, limit: f64) {
         self.start_limit(limit, ChildrenMode::Include);
     }
 
-    /// Sends `signal` to `self`.
+    /// Sends `signal` to the process.
     #[inline]
     pub fn kill(&self, signal: &Signal) {
         let sig = match signal {

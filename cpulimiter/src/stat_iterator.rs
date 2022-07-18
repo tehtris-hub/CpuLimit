@@ -1,10 +1,10 @@
-//! Parse `/proc/<pid>/stat` files.
+//! An iterator over the fields of `/proc/<pid>/stat` files.
 //!
-//! This modules exposes an iterator to parse the content of the
-//! `/proc/<pid>/stat` file. The format is described in `man proc`.
+//! The second field of stat files (`comm`) is an arbitrary string
+//! that might contain whitespace, making the straightforward
+//! [`str::split_whitespace`] parsing impossible.
 //!
-//! We cannot simply use [`str::split_whitespace`] because the `comm` field
-//! (command name) might contain arbitrary characters.
+//! See `man proc` for a list of the fields in the file.
 
 use std::fs;
 use std::io;
@@ -21,17 +21,7 @@ pub struct StatFileIter<'s> {
     state: State,
 }
 
-impl<'a> From<&'a str> for StatFileIter<'a> {
-    fn from(data: &'a str) -> Self {
-        Self {
-            data,
-            idx: 0,
-            state: State::Pid,
-        }
-    }
-}
-
-/// The state of a StatFileIter.
+/// The state of a `StatFileIter`.
 #[derive(PartialEq)]
 enum State {
     /// Just instantiated, the next field is the first (PID).
@@ -43,15 +33,25 @@ enum State {
 }
 
 impl StatFile {
-    /// Open the `/proc/<pid>/stat` file.
+    /// Opens the `/proc/<pid>/stat` file.
     pub fn open(pid: Pid) -> io::Result<Self> {
         let stat = fs::read_to_string(format!("/proc/{pid}/stat"))?;
         Ok(Self(stat))
     }
 
-    /// Create an iterator over the fields of the file.
+    /// Creates an iterator over the fields of the file.
     pub fn iter(&self) -> StatFileIter<'_> {
         self.0[..].into()
+    }
+}
+
+impl<'a> From<&'a str> for StatFileIter<'a> {
+    fn from(data: &'a str) -> Self {
+        Self {
+            data,
+            idx: 0,
+            state: State::Pid,
+        }
     }
 }
 
@@ -59,7 +59,7 @@ impl<'a> Iterator for StatFileIter<'a> {
     type Item = &'a str;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.state == State::Command {
+        if let State::Command = self.state {
             // find the last parenthesis as it marks the end of the command name
             let idx = self.data.rfind(')')?;
             self.idx += 1; // skip first parenthesis

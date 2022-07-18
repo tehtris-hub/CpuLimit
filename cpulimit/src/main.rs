@@ -22,8 +22,8 @@ fn main() {
     let args = Args::parse();
 
     if args.include_children {
-        args.pid.limit_with_children(args.limit)
+        args.pid.limit_with_children(args.limit);
     } else {
-        args.pid.limit(args.limit)
+        args.pid.limit(args.limit);
     };
 }

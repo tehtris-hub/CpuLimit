@@ -19,4 +19,3 @@ mod process_iterator;
 mod stat_iterator;
 
 pub use pid::Pid;
-pub use process_group::ChildrenMode;

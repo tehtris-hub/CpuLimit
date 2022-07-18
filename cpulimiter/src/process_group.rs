@@ -8,7 +8,7 @@ use crate::pid::Pid;
 use crate::pid::Signal;
 use crate::process_iterator::ProcessIterator;
 
-/// Indicates whether the child processes should be monitored.
+/// Whether the child processes should be monitored.
 pub enum ChildrenMode {
     Include,
     Exclude,
@@ -31,7 +31,7 @@ pub struct ProcessGroup {
 }
 
 impl ProcessGroup {
-    /// Instantiate a process group.
+    /// Instantiates a process group.
     pub fn new(pid: Pid, children_mode: ChildrenMode) -> Self {
         let mut group = Self {
             target: pid,
@@ -46,10 +46,7 @@ impl ProcessGroup {
         group
     }
 
-    /// Update the CPU usage of the group.
-    ///
-    /// This function computes the CPU usage since the last call and smoothly updates
-    /// the `cpu_usage` attribute.
+    /// Computes the CPU usage since the last call and smoothly updates the value.
     pub fn update(&mut self) -> &mut Self {
         if let ChildrenMode::Include = self.children_mode {
             if let Ok(processes) = ProcessIterator::new() {
@@ -86,13 +83,13 @@ impl ProcessGroup {
         self
     }
 
-    /// Retrieve the previously computed CPU usage.
+    /// Retrieves the previously computed CPU usage.
     #[inline]
     pub fn cpu_usage(&self) -> f64 {
         self.cpu_usage
     }
 
-    /// Send a signal to the target process and its children if needed.
+    /// Sends a signal to the target process and its children if needed.
     fn kill(&self, signal: &Signal) {
         self.target.kill(signal);
         if let ChildrenMode::Include = self.children_mode {
