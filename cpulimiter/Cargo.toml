@@ -1,8 +1,12 @@
 [package]
 name = "cpulimiter"
+description = "A user-space CPU limiter crate"
 version = "0.1.0"
 edition = "2021"
 license = "LGPL-3.0-only"
+authors = ["Fabien Savy <fabien.savy@tehtris.org>"]
+homepage = "https://github.com/tehtris-hub/CpuLimit"
+repository = "https://github.com/tehtris-hub/CpuLimit"
 
 [dependencies]
 # All dependencies are licensed under both MIT and Apache 2.0
