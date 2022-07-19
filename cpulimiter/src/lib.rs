@@ -1,4 +1,4 @@
-//! A tool to limit the CPU usage of a process.
+//! Limit the CPU usage of a process.
 //!
 //! # Example
 //!
