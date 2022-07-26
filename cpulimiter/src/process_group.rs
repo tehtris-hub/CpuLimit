@@ -4,6 +4,8 @@ use std::collections::HashSet;
 use std::time::Duration;
 use std::time::Instant;
 
+use crate::error::Error;
+use crate::error::Result;
 use crate::pid::Pid;
 use crate::pid::Signal;
 use crate::process_iterator::ProcessIterator;
@@ -20,7 +22,7 @@ impl Default for ChildrenMode {
     }
 }
 
-/// An abstraction to compute CPU usage for a process and its children.
+/// An abstraction to compute the CPU usage of a process and its children.
 pub struct ProcessGroup {
     target: Pid,
     children_mode: ChildrenMode,
@@ -32,7 +34,7 @@ pub struct ProcessGroup {
 
 impl ProcessGroup {
     /// Instantiates a process group.
-    pub fn new(pid: Pid, children_mode: ChildrenMode) -> Self {
+    pub fn new(pid: Pid, children_mode: ChildrenMode) -> Result<Self> {
         let mut group = Self {
             target: pid,
             children: HashSet::new(),
@@ -42,29 +44,28 @@ impl ProcessGroup {
             total_time: Duration::from_secs(0),
         };
 
-        group.update();
-        group
+        group.update()?;
+        Ok(group)
     }
 
     /// Computes the CPU usage since the last call and smoothly updates the value.
-    pub fn update(&mut self) -> &mut Self {
-        if let ChildrenMode::Include = self.children_mode {
-            if let Ok(processes) = ProcessIterator::new() {
-                self.children.clear();
-                for process in processes {
-                    if process != self.target && process.is_child_of(self.target) {
-                        self.children.insert(process);
-                    }
-                }
-            }
+    pub fn update(&mut self) -> Result<()> {
+        if !self.target.alive() {
+            return Err(Error::DeadTarget);
         }
 
         let prev_time = self.total_time;
         self.total_time = self.target.get_cputime();
 
         if let ChildrenMode::Include = self.children_mode {
-            for process in &self.children {
-                self.total_time += process.get_cputime();
+            if let Ok(processes) = ProcessIterator::new() {
+                self.children.clear();
+                for process in processes {
+                    if process != self.target && process.is_child_of(self.target) {
+                        self.children.insert(process);
+                        self.total_time += process.get_cputime();
+                    }
+                }
             }
         }
 
@@ -80,7 +81,7 @@ impl ProcessGroup {
             self.cpu_usage = 0.8 * self.cpu_usage + 0.2 * cpu_usage;
         }
 
-        self
+        Ok(())
     }
 
     /// Retrieves the previously computed CPU usage.
@@ -91,10 +92,10 @@ impl ProcessGroup {
 
     /// Sends a signal to the target process and its children if needed.
     fn kill(&self, signal: &Signal) {
-        self.target.kill(signal);
+        let _ = self.target.kill(signal);
         if let ChildrenMode::Include = self.children_mode {
             for child in &self.children {
-                child.kill(signal);
+                let _ = child.kill(signal);
             }
         }
     }

@@ -13,3 +13,5 @@ repository = "https://github.com/tehtris-hub/CpuLimit"
 # unless stated otherwise.
 lazy_static = { version = "1.4.0", default-features = false }
 libc = "0.2.125"
+parking_lot = "0.12.1"
+thiserror = "1.0.31"

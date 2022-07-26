@@ -2,20 +2,11 @@
 
 use std::fmt::Display;
 use std::str::FromStr;
-use std::thread;
 use std::time::Duration;
 
 use lazy_static::lazy_static;
 
-use crate::process_group::ChildrenMode;
-use crate::process_group::ProcessGroup;
 use crate::stat_iterator::StatFile;
-
-/// The granularity of the control slice.
-///
-/// The monitoring thread will wake up every `SLICE_DURATION` to compute
-/// the length of the next work slice for the monitored process(es).
-pub const SLICE_DURATION: Duration = Duration::from_millis(100);
 
 lazy_static!(
     /// The number of clock ticks per second.
@@ -34,6 +25,8 @@ pub enum Signal {
     SIGSTOP,
     /// Resume the process execution.
     SIGCONT,
+    /// Check process existence.
+    SIGNULL,
 }
 
 /// The representation of a process running on the system.
@@ -112,50 +105,27 @@ impl Pid {
             .unwrap_or(Duration::from_secs(0))
     }
 
-    /// Actively limits the CPU time of the target process (and its children if asked to).
-    fn start_limit(self, limit: f64, children_mode: ChildrenMode) {
-        let limit = limit / 100_f64;
-        let mut group = ProcessGroup::new(self, children_mode);
-        let mut working_rate = 1_f64;
-
-        loop {
-            let cpu_usage = group.update().cpu_usage();
-
-            working_rate *= limit / cpu_usage;
-            working_rate = f64::min(working_rate, 1_f64);
-
-            let work_time = SLICE_DURATION.mul_f64(working_rate);
-            let sleep_time = SLICE_DURATION - work_time;
-
-            group.resume();
-            thread::sleep(work_time);
-
-            group.suspend();
-            thread::sleep(sleep_time);
-        }
-    }
-
-    /// Actively limits the CPU time of the target process only.
-    #[inline]
-    pub fn limit(&self, limit: f64) {
-        self.start_limit(limit, ChildrenMode::Exclude);
-    }
-
-    /// Actively limits the CPU time of the target process and its children.
-    #[inline]
-    pub fn limit_with_children(&self, limit: f64) {
-        self.start_limit(limit, ChildrenMode::Include);
+    /// Indicates whether the process is alive or not.
+    pub fn alive(&self) -> bool {
+        self.kill(&Signal::SIGNULL).is_ok()
     }
 
     /// Sends `signal` to the process.
     #[inline]
-    pub(crate) fn kill(&self, signal: &Signal) {
+    pub(crate) fn kill(self, signal: &Signal) -> Result<(), ()> {
         let sig = match signal {
+            Signal::SIGNULL => 0,
             Signal::SIGSTOP => libc::SIGSTOP,
             Signal::SIGCONT => libc::SIGCONT,
         };
 
         // SAFETY: Inherently unsafe as a syscall but the PID and the signal are valid values.
-        unsafe { libc::kill(self.0 as _, sig) };
+        let res = unsafe { libc::kill(self.0 as _, sig) };
+
+        if res == 0 {
+            Ok(())
+        } else {
+            Err(())
+        }
     }
 }

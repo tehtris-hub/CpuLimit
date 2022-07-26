@@ -10,9 +10,11 @@
 //!
 //! Run `cpulimit --help` to list all the available options.
 
+use std::{process::exit, thread, time::Duration};
+
 use clap::Parser;
 
-use cpulimiter::Pid;
+use cpulimiter::{CpuLimit, Pid};
 
 #[derive(Parser, Debug)]
 #[clap(version, about)]
@@ -33,9 +35,27 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    if args.include_children {
-        args.pid.limit_with_children(args.limit);
+    let limiter = if args.include_children {
+        CpuLimit::new_with_children(args.pid, args.limit)
     } else {
-        args.pid.limit(args.limit);
-    };
+        CpuLimit::new(args.pid, args.limit)
+    }
+    .unwrap();
+
+    ctrlc::set_handler(move || {
+        println!("Stopping after receiving Ctrl-C");
+        limiter.stop().unwrap();
+        // wait for the Stop command to propagate.
+        thread::sleep(Duration::from_millis(200));
+        exit(0);
+    })
+    .unwrap();
+
+    loop {
+        thread::sleep(Duration::from_secs(1));
+        if !args.pid.alive() {
+            println!("The target process is dead");
+            break;
+        }
+    }
 }
