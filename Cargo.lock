@@ -72,7 +72,7 @@ dependencies = [
 
 [[package]]
 name = "cpulimit"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "clap",
  "cpulimiter",
@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "cpulimiter"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "lazy_static",
  "libc",

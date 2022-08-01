@@ -1,7 +1,7 @@
 [package]
 name = "cpulimit"
 description = "A user-space CPU limiter"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 license = "LGPL-3.0-only"
 authors = ["Fabien Savy <fabien.savy@tehtris.org>"]
@@ -9,7 +9,7 @@ homepage = "https://github.com/tehtris-hub/CpuLimit"
 repository = "https://github.com/tehtris-hub/CpuLimit"
 
 [dependencies]
-cpulimiter = { path = "../cpulimiter", version = "0.1.1" }
+cpulimiter = { path = "../cpulimiter", version = "0.2.0" }
 ctrlc = { version = "3.2.2", features = ["termination"] }
 
 [dependencies.clap]
