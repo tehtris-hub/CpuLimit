@@ -87,6 +87,11 @@ impl ProcessGroup {
         self.cpu_usage
     }
 
+    /// Retrieves the total amount of CPU time used.
+    pub fn total_cpu_time(&self) -> Duration {
+        self.total_time
+    }
+
     /// Sends a signal to the target process and its children if needed.
     fn kill(&self, signal: &Signal) {
         let _ = self.target.kill(signal);

@@ -102,4 +102,9 @@ impl CpuLimit {
     pub fn cpu_usage(&self) -> f64 {
         self.group.read().cpu_usage()
     }
+
+    /// Retrieves the total amount of CPU time used by the target process.
+    pub fn total_cpu_time(&self) -> Duration {
+        self.group.read().total_cpu_time()
+    }
 }
