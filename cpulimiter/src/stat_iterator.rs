@@ -6,8 +6,7 @@
 //!
 //! See `man proc` for a list of the fields in the file.
 
-use std::fs;
-use std::io;
+use std::{fs, io};
 
 use crate::pid::Pid;
 
@@ -86,8 +85,7 @@ impl<'a> Iterator for StatFileIter<'a> {
 
 #[cfg(test)]
 mod test {
-    use super::StatFile;
-    use super::StatFileIter;
+    use super::{StatFile, StatFileIter};
 
     #[test]
     fn standard_stat() {

@@ -10,7 +10,9 @@
 //!
 //! Run `cpulimit --help` to list all the available options.
 
-use std::{process::exit, thread, time::Duration};
+use std::process::exit;
+use std::thread;
+use std::time::Duration;
 
 use clap::Parser;
 

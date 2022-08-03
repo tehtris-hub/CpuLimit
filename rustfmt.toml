@@ -1,4 +1,4 @@
 # only one import per line
 # this feature is unstable and requires nightly (cargo +nightly fmt)
 # tracking issue: https://github.com/rust-lang/rustfmt/issues/4991
-imports_granularity = "Item"
+imports_granularity = "Module"

@@ -1,19 +1,13 @@
-use std::{
-    sync::{
-        mpsc::{self, Receiver, SyncSender},
-        Arc,
-    },
-    thread,
-    time::Duration,
-};
+use std::sync::mpsc::{self, Receiver, SyncSender};
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 use parking_lot::RwLock;
 
-use crate::{
-    error::Result,
-    process_group::{ChildrenMode, ProcessGroup},
-    Pid,
-};
+use crate::error::Result;
+use crate::process_group::{ChildrenMode, ProcessGroup};
+use crate::Pid;
 
 /// The granularity of the control slice.
 ///

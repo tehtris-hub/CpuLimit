@@ -1,13 +1,10 @@
 //! Track the CPU usage of a process (and its children).
 
 use std::collections::HashSet;
-use std::time::Duration;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
-use crate::error::Error;
-use crate::error::Result;
-use crate::pid::Pid;
-use crate::pid::Signal;
+use crate::error::{Error, Result};
+use crate::pid::{Pid, Signal};
 use crate::process_iterator::ProcessIterator;
 
 /// Whether the child processes should be monitored.
